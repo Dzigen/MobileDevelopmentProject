@@ -98,7 +98,7 @@ Page{
 
                             MouseArea{
                                 anchors.fill: parent
-                                onClicked: {month=index; box.centerButPressed();}
+                                onClicked: {month=index;year=name.text; box.centerButPressed();}
                             }
 
                             Text {
