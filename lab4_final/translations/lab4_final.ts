@@ -23,19 +23,4 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
-<context>
-    <name>DayPage</name>
-    <message>
-        <source>Погода</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>События</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Записи</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
 </TS>

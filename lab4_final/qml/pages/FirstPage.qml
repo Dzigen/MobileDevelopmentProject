@@ -7,179 +7,187 @@ Page{
     allowedOrientations: Orientation.All
 
     function getYear(offset){
-            var today = new Date();
-            var year = today.getFullYear();
+        var today = new Date();
+        var year = today.getFullYear();
+        return (year + offset)
+    }
 
-            return (year + offset)
-        }
+    function blankDays(month, year){
+        var days= new Date(year, month).getDay()
+        return days === 0 ? 6 : days-1
+    }
 
-        property int maxYear: getYear(2)
-        property int index: 6
-        property int year: getYear(0)
-        property int curYear: getYear(0)
-        property int minYear: getYear(-6)
-        property bool flag: true
+    function daysInMonth (month, year) {
+        return 32 - new Date(year,month,32).getDate()
+    }
 
+    function getName(idx){
+        const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                            "Июль", "Август", "Сентабрь", "Октябрь", "Ноябрь", "Декабрь"];
+        return monthNames[idx]
+    }
 
-        /*Календарь по годам*/
-        ListView {
-            id: listView1
-            anchors.top: row.bottom
-            anchors.bottom: parent.bottom
+    property int maxYear: getYear(2)
+    property int minYear: getYear(-6)
+
+    property int index: 6
+
+    property int year: getYear(0)
+    property int month: new Date().getMonth()
+    property int day: new Date().getDate()
+
+    property int curYear: getYear(0)
+    property int curMonth: new Date().getMonth()
+    property int curDay: new Date().getDate()
+
+    property bool flag: true
+
+    /*Календарь по годам*/
+    ListView {
+        id: listView1
+        anchors.top: row.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: parent.height
+        cacheBuffer: 4
+
+        delegate: Item {
+            id: item
             anchors.left: parent.left
             anchors.right: parent.right
-            height: parent.height
-            cacheBuffer: 4
+            height: parent.width*4
 
-            delegate: Item {
-                id: item
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: parent.width*4
+            Rectangle {
+                anchors.fill: parent
 
-                Rectangle {
-                    anchors.fill: parent
+                /*Год календаря*/
+                Text {
+                    id: name
+                    text: idshnik
+                    font.pixelSize: 50
+                    font.weight:"Black"
+                    color: clr
+                    anchors.top: parent.top
+                    anchors.topMargin: 30
+                    anchors.left: parent.left
+                    anchors.leftMargin: parent.width/14
+                }
 
-                    /*Год календаря*/
-                    Text {
-                        id: name
-                        text: idshnik
-                        font.pixelSize: 50
-                        font.weight:"Black"
-                        color: clr
-                        anchors.top: parent.top
-                        anchors.topMargin: 30
-                        anchors.left: parent.left
-                        anchors.leftMargin: parent.width/14
-                    }
+                /*Месяцы текущего года*/
+                Grid{
+                    anchors.top: name.bottom
+                    anchors.topMargin: 30
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
 
-                    /*Месяцы текущего года*/
-                    Grid{
-                        anchors.top: name.bottom
-                        anchors.topMargin: 30
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
+                    columns: 2
+                    spacing: 2
 
-                        columns: 2
-                        spacing: 2
+                    Repeater {
+                        id:repeater
 
-                        Repeater {
-                            id:repeater
+                        model: 12
 
-                            model: 12
+                        Rectangle {
+                            id: areas
+                            width: parent.width/2; height: width*1.25
+                            border.width: 1
+                            color: "yellow"
 
+                            MouseArea{
+                                anchors.fill: parent
+                                onClicked: {month=index; box.centerButPressed();}
+                            }
 
-                            Rectangle {
-                                id: areas
-                                width: parent.width/2; height: width*1.25
-                                border.width: 1
-                                color: "yellow"
+                            Text {
+                                id: monthName
+                                font.weight:"Bold"
+                                text: getName(index)
+                                font.pointSize: 25
+                                anchors.top: parent.top
+                                anchors.left: parent.left
+                                anchors.leftMargin: 5
+                            }
 
-                                function getName(){
-                                    const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-                                                        "Июль", "Август", "Сентабрь", "Октябрь", "Ноябрь", "Декабрь"];
-                                    return monthNames[index]
-                                }
+                            /*Обозначения дней недели*/
+                            Grid {
+                                id: weeksLetters
+                                columns: 7
+                                spacing: parent.width/10
+                                anchors.top: monthName.bottom
+                                anchors.topMargin: 40
+                                anchors.horizontalCenter: parent.horizontalCenter
 
+                                Repeater{
+                                    model:7
 
-                                Text {
-                                    id: monthName
-                                    font.weight:"Bold"
-                                    text: getName()
-                                    font.pointSize: 25
-                                    anchors.top: parent.top
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 5
-                                }
+                                    Rectangle{
+                                        width: 10
+                                        height: 10
+                                        color: "yellow"
 
-                                /*Обозначения дней недели*/
-                                Grid {
-                                    id: weeksLetters
-                                    columns: 7
-                                    spacing: parent.width/10
-                                    anchors.top: monthName.bottom
-                                    anchors.topMargin: 40
-                                    anchors.horizontalCenter: parent.horizontalCenter
+                                        function signWeek(){
+                                            const letters=["П","В","С","Ч","П","С","В"]
+                                            return letters[index]
+                                        }
 
-                                    Repeater{
-                                        model:7
-
-                                        Rectangle{
-                                            width: 10
-                                            height: 10
-                                            color: "yellow"
-
-                                            function signWeek(){
-                                                const letters=["П","В","С","Ч","П","С","В"]
-                                                return letters[index]
-                                            }
-
-                                            Text {
-                                                id: dayOftheWeek
-                                                text: signWeek()
-                                                anchors.centerIn: parent
-                                            }
+                                        Text {
+                                            id: dayOftheWeek
+                                            text: signWeek()
+                                            anchors.centerIn: parent
                                         }
                                     }
                                 }
+                            }
 
-                                /*Сетка дней текущего месяца*/
-                                Grid{
-                                    id:gd
-                                    columns: 7
-                                    spacing: parent.width/20
-                                    anchors.top: weeksLetters.bottom
-                                    anchors.topMargin: 40
-                                    anchors.horizontalCenter: parent.horizontalCenter
+                            /*Сетка дней текущего месяца*/
+                            Grid{
+                                id:gd
+                                columns: 7
+                                spacing: parent.width/20
+                                anchors.top: weeksLetters.bottom
+                                anchors.topMargin: 40
+                                anchors.horizontalCenter: parent.horizontalCenter
 
-                                    function blankDays(month, year){
-                                        var days= new Date(year, month).getDay()
-                                        return days === 0 ? 6 : days-1
-                                    }
+                                Repeater{
+                                    id:days
 
-                                    function daysInMonth (month, year) {
-                                        return 32 - new Date(year,month,32).getDate()
-                                    }
+                                    property int blank: blankDays(index,parseInt(name.text,10))
+                                    property int month: index
 
-                                    Repeater{
-                                        id:days
+                                    model: daysInMonth(index,parseInt(name.text,10)) + blankDays(index,parseInt(name.text,10))
 
-                                        property int blank: parent.blankDays(index,parseInt(name.text,10))
-                                        property int month: index
+                                    Rectangle{
+                                        width: 30
+                                        height: 30
 
-                                        model: parent.daysInMonth(index,parseInt(name.text,10)) + parent.blankDays(index,parseInt(name.text,10))
+                                        function curDate(){
 
-                                        Rectangle{
-                                            width: 30
-                                            height: 30
+                                            if(index+1>days.blank){
+                                                var date=new Date();
+                                                var year=date.getFullYear();
+                                                var month=date.getMonth();
+                                                var day=date.getDate();
 
-                                            function curDate(){
-
-                                                if(index+1>days.blank){
-                                                    var date=new Date();
-                                                    var year=date.getFullYear();
-                                                    var month=date.getMonth();
-                                                    var day=date.getDate();
-
-                                                    if (year===parseInt(name.text,10) && days.month===month && index+1-days.blank===day){
-                                                        return "red"
-                                                    }else{
-                                                        return "yellow"
-                                                    }
-
+                                                if (year===parseInt(name.text,10) && days.month===month && index+1-days.blank===day){
+                                                    return "red"
                                                 }else{
                                                     return "yellow"
                                                 }
-                                            }
 
-                                            color: curDate()
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                color: "black"
-                                                text: index+1>days.blank ? index+1-days.blank : ""
+                                            }else{
+                                                return "yellow"
                                             }
+                                        }
+
+                                        color: curDate()
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            color: "black"
+                                            text: index+1>days.blank ? index+1-days.blank : ""
                                         }
                                     }
                                 }
@@ -188,90 +196,93 @@ Page{
                     }
                 }
             }
+        }
 
-            model: ListModel {
-                id: listModel
-            }
+        model: ListModel {
+            id: listModel
+        }
 
-            function changeIndex(){
-                positionViewAtIndex(5, ListView.Beginning)
-            }
+        function changeIndex(){
+            positionViewAtIndex(5, ListView.Beginning)
+        }
 
-            function checkYear(index){
-                if(index!==-1){
-                    var prevYear=year
-                    var indx=0
-                    year=listModel.get(index).idshnik
-                    if(year-prevYear>0){
-                        indx=index-1;
-                    }else if(year-prevYear<0){
-                        indx=index+1
-                    }else{
-                        return
-                    }
-
-                    if(prevYear===curYear)
-                        listModel.set(indx,{clr:"red"})
-                    else
-                        listModel.set(indx,{clr:"black"})
-
-                    listModel.set(index,{clr:"white"})
+        function checkYear(index){
+            if(index!==-1){
+                var prevYear=year
+                var indx=0
+                year=listModel.get(index).idshnik
+                if(year-prevYear>0){
+                    indx=index-1;
+                }else if(year-prevYear<0){
+                    indx=index+1
+                }else{
+                    return
                 }
 
-                return
+                if(prevYear===curYear)
+                    listModel.set(indx,{clr:"red"})
+                else
+                    listModel.set(indx,{clr:"black"})
+
+                listModel.set(index,{clr:"white"})
             }
 
-            /*Реализация "бесконечного скрола" ленты календаря*/
-            onContentYChanged: {
-                var index=indexAt(contentX,contentY)
-                checkYear(index)
+            return
+        }
 
-                if(index>(count-3) ){
-                    maxYear++
-                    listModel.append({idshnik:maxYear, clr: maxYear==curYear ? "red" : "black"})
-                    listModel.remove(0)
-                    minYear++
-                }else if(index===4 ){
-                    changeIndex()
-                    flag=false;
-                    minYear--
-                    listModel.insert(0,{idshnik:Math.abs(minYear),clr: maxYear==curYear ? "red" : "black"})
-                    listModel.remove(count-1)
-                    maxYear--
-                }
-            }
+        /*Реализация "бесконечного скрола" ленты календаря*/
+        onContentYChanged: {
+            var index=indexAt(contentX,contentY)
+            checkYear(index)
 
-            Component.onCompleted: {
-                for(var i=0;i<9;i++){
-                    listModel.append({idshnik:minYear+i,clr:"black"})
-                }
-
-                listModel.set(6,{clr:"white"})
-                positionViewAtIndex(6, ListView.Beginning)
+            if(index>(count-3) ){
+                maxYear++
+                listModel.append({idshnik:maxYear, clr: maxYear==curYear ? "red" : "black"})
+                listModel.remove(0)
+                minYear++
+            }else if(index===4 ){
+                changeIndex()
+                flag=false;
+                minYear--
+                listModel.insert(0,{idshnik:Math.abs(minYear),clr: maxYear==curYear ? "red" : "black"})
+                listModel.remove(count-1)
+                maxYear--
             }
         }
 
-        /*Календарь по месяцам*/
+        Component.onCompleted: {
+            for(var i=0;i<9;i++){
+                listModel.append({idshnik:minYear+i,clr:"black"})
+            }
+
+            listModel.set(6,{clr:"white"})
+            positionViewAtIndex(6, ListView.Beginning)
+        }
+    }
+
+    /*Календарь по месяцам*/
+    Rectangle{
+        id:gridBack
+        color: "white"
+        anchors.top: weeks.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        visible: false
+
         GridView {
             id: grid
-
+            anchors.fill: parent
             property int nameMax: -1
             property int nameMin: 1
-
-            anchors.top: weeks.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
+            signal signal4()
 
             height: parent.height
             cellWidth: width / 7;
             cellHeight: cellWidth;
-            visible: false
-
-            cacheBuffer: 100
 
             model: ListModel {
-                id: listmodel
+                id: listmodel2
             }
 
             delegate : Rectangle {
@@ -280,128 +291,148 @@ Page{
                 border.color: "black"
                 color: color1
 
-                Text {
-                    anchors.centerIn: parent
-                    id: t
-                    color: "black"
-                    text: number1
-                }
-            }
-
-            Component.onCompleted: {
-                for(var j=0; j<7;j++){
-                    for(var i=0; i<42;i++){
-                        nameMax++
-                        listmodel.append({color1:"white",number1: nameMax})
-                    }
-                }
-
-
-                positionViewAtIndex(168,GridView.Beginning)
-                listmodel.set(168,{color1:"red"})
-            }
-
-            onContentYChanged: {
-                var index=indexAt(contentX,contentY)
-
-                if(index<=126 && index!==1){
-                    positionViewAtIndex(126+42,GridView.Visible)
-
-                    for(var i=0; i<42;i++){
-                        nameMin--
-                        listmodel.insert(0,{color1:"white",number1: nameMin})
-                    }
-
-                    listmodel.set(126+42,{color1:"red"})
-
-                }else if(index>=count-84){
-
-                    for(var j=0; j<42;j++){
-                        nameMax--
-                        listmodel.append({color1:"white",number1: nameMax})
-                    }
-
-                    listmodel.set(index,{color1:"red"})
-                }
-            }
-        }
-
-        /*Табличка с днями недели*/
-        Grid{
-            id:weeks
-            columns: 7
-            height: row.height/2
-            width: parent.width
-            anchors.top: row.verticalCenter
-            anchors.topMargin: row.height/3
-            visible: false
-
-            Repeater{
-                model:7
-
                 Rectangle{
-                    width: parent.width/7
-                    color: "black"
-                    height: parent.height
+                    anchors.top: parent.top
+                    anchors.topMargin: parent.border.width
+                    anchors.right: parent.right
+                    anchors.rightMargin: parent.border.width
+                    width: parent.width/3
+                    height: width
 
-                    function signWeek(){
-                        const letters=["Пн","Вт","Ср","Чт","Пн","Сб","Вс"]
-                        return letters[index]
-                    }
-
+                    color: color2
                     Text {
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                        color: "white"
-                        text: signWeek()
+                        anchors.centerIn: parent
+                        id: t
+                        color: "black"
+                        text: number1
                     }
+                }
+
+                MouseArea{
+                    anchors.fill: parent
+                    onClicked: {if(index+1>blankDays(month,year)){box.rightButPressed();day=(index+1-blankDays(month,year));} }
+                }
+            }
+
+            /*Формируем сетку дней для текущего месяца*/
+            onSignal4:{
+                listmodel2.clear()
+                var days=daysInMonth(month,year)
+                var blanks=blankDays(month,year)
+
+                for(var i=0; i<(days+blanks);i++){
+                    nameMax++
+                    listmodel2.append({color1:"yellow",
+                                          color2:year==curYear && month==curMonth && (i+1-blanks)==curDay ? "red" : "yellow",
+                                          number1: i+1>blanks ? (i+1-blanks).toString() : ""
+                                      })
                 }
             }
         }
+    }
 
-        /*Верхнее меню*/
-        Rectangle {
-            id:row
+    /*Календарь по дням*/
+    DayPage{
+        id:daypage
+        anchors.top: row.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: parent.height
+        visible: false
+    }
+
+    /*Табличка с днями недели*/
+    Grid{
+        id:weeks
+        columns: 7
+        height: row.height/2
+        width: parent.width
+        anchors.top: row.verticalCenter
+        anchors.topMargin: row.height/3
+        visible: false
+
+        Repeater{
+            model:7
+
+            Rectangle{
+                width: parent.width/7
+                color: "black"
+                height: parent.height
+
+                function signWeek(){
+                    const letters=["Пн","Вт","Ср","Чт","Пн","Сб","Вс"]
+                    return letters[index]
+                }
+
+                function specificIndex(){
+                    return index===6 ? 0 : index+1
+                }
+
+                function checkCurDate(){
+                    return year===curYear && month===curMonth && day===curDay ? true : false
+                }
+
+                function checkCurDay(){
+                    return daypage.visible==true && new Date(year,month,day).getDay()===specificIndex() ? true : false
+                }
+
+                Text {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: parent.height/15
+                    anchors.right: parent.right
+                    color: checkCurDay() && checkCurDate() ? "red" : "white"
+                    text: checkCurDay() ? day+","+signWeek() : signWeek()
+                }
+            }
+        }
+    }
+
+    /*Верхнее меню*/
+    Rectangle {
+        id:row
+        anchors.top: parent.top
+        width: parent.width
+        height: parent.height/8
+        color: "black"
+
+        /*Текущий год и месяц*/
+        Column{
+            spacing: 10
+
+            anchors.left: parent.left
+            anchors.leftMargin: parent.width/15
             anchors.top: parent.top
-            width: parent.width
-            height: parent.height/8
-            color: "black"
-
-            /*Год показываемого календаря*/
+            anchors.topMargin: parent.height/4
             Text{
                 text: year
 
-                anchors.left: parent.left
-                anchors.leftMargin: parent.width/15
-                anchors.top: parent.top
-                anchors.topMargin: parent.height/4
+
                 font.pixelSize: 50
                 font.weight: "Black"
                 color: year==curYear ? "red" : "white"
             }
 
-            /*Переключатель между видами календаря*/
-            Box{
-                anchors.centerIn: parent
-                width: parent.width/2
-                height: parent.height/2
-
-                onSignal1: {grid.visible=false; listView1.visible=true; daypage.visible=false; weeks.visible=false}
-                onSignal2: {grid.visible=true; listView1.visible=false; daypage.visible=false; weeks.visible=true}
-                onSignal3: {grid.visible=false; listView1.visible=false; daypage.visible=true; weeks.visible=false}
+            Text {
+                id: mthName
+                font.pixelSize: 30
+                font.weight: "Bold"
+                text: getName(month)
+                color: month==curMonth && year==curYear ? "red" : "white"
+                visible: false
             }
         }
 
-        /*Календарь по дням*/
-        DayPage{
-            id:daypage
-            anchors.top: row.verticalCenter
-            anchors.topMargin: row.height/3
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: parent.height
-            visible: false
-        }
-}
+        /*Переключатель между видами календаря*/
+        Box{
+            id:box
+            anchors.centerIn: parent
+            width: parent.width/2
+            height: parent.height/2
 
+            onSignal1: {gridBack.visible=false; listView1.visible=true; mthName.visible=false; daypage.visible=false; weeks.visible=false}
+            onSignal2: {grid.signal4();gridBack.visible=true; mthName.visible=true; listView1.visible=false; daypage.visible=false; weeks.visible=true}
+            onSignal3: {gridBack.visible=false; listView1.visible=false; mthName.visible=true; daypage.visible=true; weeks.visible=true}
+        }
+    }
+}
