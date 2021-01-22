@@ -21,7 +21,6 @@ DISTFILES += qml/lab4_final.qml \
     qml/pages/Box.qml \
     qml/pages/DayPage.qml \
     qml/pages/FirstPage.qml \
-    qml/pages/SecondPage.qml \
     rpm/lab4_final.changes.in \
     rpm/lab4_final.changes.run.in \
     rpm/lab4_final.spec \
