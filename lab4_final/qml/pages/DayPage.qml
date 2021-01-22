@@ -7,6 +7,10 @@ Item {
         anchors.fill:parent
         color: "white"
 
+        /**
+         *Заглушка.
+         *Планируется выводить информацию о погоде по текущему дню.
+         */
         Rectangle{
             id:weather
             anchors.top: daysScroll.bottom
@@ -21,6 +25,10 @@ Item {
             }
         }
 
+        /**
+         *Заглушка.
+         *Планируется реализовать функцию для отметки будущих мероприятий в календаре.
+         */
         Rectangle{
             id:events
             anchors.top: weather.bottom
@@ -36,8 +44,11 @@ Item {
             }
         }
 
+        /**
+         *Заглушка.
+         *Планируется реализовать возможность записи текстовой информации по каждому дню.
+         */
         Rectangle{
-
             anchors.top: events.bottom
             anchors.topMargin: 50
             height:100
@@ -51,6 +62,10 @@ Item {
             }
         }
 
+        /**
+         *Заглушка.
+         *Планируется реализовать способ двежения по датам в календаре по дням
+         */
         Rectangle{
             id:daysScroll
             color: "green"

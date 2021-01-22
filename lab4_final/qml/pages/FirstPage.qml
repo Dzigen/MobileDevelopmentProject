@@ -40,6 +40,7 @@ Page{
                 Rectangle {
                     anchors.fill: parent
 
+                    /*Год календаря*/
                     Text {
                         id: name
                         text: idshnik
@@ -52,6 +53,7 @@ Page{
                         anchors.leftMargin: parent.width/14
                     }
 
+                    /*Месяцы текущего года*/
                     Grid{
                         anchors.top: name.bottom
                         anchors.topMargin: 30
@@ -67,6 +69,7 @@ Page{
 
                             model: 12
 
+
                             Rectangle {
                                 id: areas
                                 width: parent.width/2; height: width*1.25
@@ -79,6 +82,7 @@ Page{
                                     return monthNames[index]
                                 }
 
+
                                 Text {
                                     id: monthName
                                     font.weight:"Bold"
@@ -89,6 +93,7 @@ Page{
                                     anchors.leftMargin: 5
                                 }
 
+                                /*Обозначения дней недели*/
                                 Grid {
                                     id: weeksLetters
                                     columns: 7
@@ -119,6 +124,7 @@ Page{
                                     }
                                 }
 
+                                /*Сетка дней текущего месяца*/
                                 Grid{
                                     id:gd
                                     columns: 7
@@ -215,6 +221,7 @@ Page{
                 return
             }
 
+            /*Реализация "бесконечного скрола" ленты календаря*/
             onContentYChanged: {
                 var index=indexAt(contentX,contentY)
                 checkYear(index)
@@ -360,6 +367,7 @@ Page{
             height: parent.height/8
             color: "black"
 
+            /*Год показываемого календаря*/
             Text{
                 text: year
 
