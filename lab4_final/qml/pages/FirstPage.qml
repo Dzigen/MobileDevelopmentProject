@@ -30,7 +30,7 @@ Page{
     property int maxYear: getYear(2)
     property int minYear: getYear(-6)
 
-    property int index: 6
+    property int yearPos: 6
 
     property int year: getYear(0)
     property int month: new Date().getMonth()
@@ -51,6 +51,8 @@ Page{
         anchors.right: parent.right
         height: parent.height
         cacheBuffer: 4
+
+        signal signal5()
 
         delegate: Item {
             id: item
@@ -98,7 +100,7 @@ Page{
 
                             MouseArea{
                                 anchors.fill: parent
-                                onClicked: {month=index;year=name.text; box.centerButPressed();}
+                                onClicked: {year=name.text; minYear=year-6; maxYear=year+2; month=index; box.centerButPressed();}
                             }
 
                             Text {
@@ -160,6 +162,7 @@ Page{
                                     model: daysInMonth(index,parseInt(name.text,10)) + blankDays(index,parseInt(name.text,10))
 
                                     Rectangle{
+
                                         width: 30
                                         height: 30
 
@@ -230,6 +233,8 @@ Page{
             return
         }
 
+
+
         /*Реализация "бесконечного скрола" ленты календаря*/
         onContentYChanged: {
             var index=indexAt(contentX,contentY)
@@ -250,14 +255,27 @@ Page{
             }
         }
 
-        Component.onCompleted: {
+        onSignal5: {
+            listModel.clear();
             for(var i=0;i<9;i++){
-                listModel.append({idshnik:minYear+i,clr:"black"})
+                listModel.append({idshnik:minYear+i,clr: minYear+i==curYear ? "red" : "black"})
             }
 
-            listModel.set(6,{clr:"white"})
-            positionViewAtIndex(6, ListView.Beginning)
+            listModel.set(yearPos,{clr:"white"})
+            positionViewAtIndex(yearPos, ListView.Beginning)
+
         }
+
+        Component.onCompleted: {
+            signal5()
+        }
+    }
+
+
+
+
+    ListModel{
+        id:monthsProperties
     }
 
     /*Календарь по месяцам*/
@@ -273,9 +291,11 @@ Page{
         GridView {
             id: grid
             anchors.fill: parent
-            property int nameMax: -1
+            property int nameMax: 0
             property int nameMin: 1
             signal signal4()
+
+            cacheBuffer: 65
 
             height: parent.height
             cellWidth: width / 7;
@@ -290,6 +310,13 @@ Page{
                 height: grid.cellHeight
                 border.color: "black"
                 color: color1
+
+                Text {
+                    anchors.centerIn: parent
+                    id: shortNameMonth
+                    text: name1
+                    color: "black"
+                }
 
                 Rectangle{
                     anchors.top: parent.top
@@ -310,22 +337,195 @@ Page{
 
                 MouseArea{
                     anchors.fill: parent
-                    onClicked: {if(index+1>blankDays(month,year)){box.rightButPressed();day=(index+1-blankDays(month,year));} }
+                    onClicked: {
+                        if(t.text!=""){
+
+                            for(var j=0;j<monthsProperties.count;j++){
+                                if(index>=monthsProperties.get(j).startIndex &&
+                                        index<monthsProperties.get(j).startIndex+monthsProperties.get(j).sumElements){
+
+                                    var trueDay=index-monthsProperties.get(j).startIndex
+                                    var newMon=monthsProperties.get(j).month
+
+                                    grid.changeYear(month,newMon)
+
+                                    month=monthsProperties.get(j).month
+                                    day=(trueDay+1-blankDays(month,year));
+
+                                    break
+                                }
+                            }
+
+                            box.rightButPressed();
+                        }
+                    }
                 }
             }
 
-            /*Формируем сетку дней для текущего месяца*/
-            onSignal4:{
-                listmodel2.clear()
-                var days=daysInMonth(month,year)
-                var blanks=blankDays(month,year)
+            function checkBlanksColor(leftBoard,rightBoard,pos){
+                return pos+1>leftBoard && pos+1<=rightBoard ? "yellow" : "#daa520"
+            }
 
-                for(var i=0; i<(days+blanks);i++){
-                    nameMax++
-                    listmodel2.append({color1:"yellow",
-                                          color2:year==curYear && month==curMonth && (i+1-blanks)==curDay ? "red" : "yellow",
-                                          number1: i+1>blanks ? (i+1-blanks).toString() : ""
+
+            function getShortMonthName(idx){
+                const monthNames = ["Янв.", "Февр.", "Март", "Апр.", "Май", "Июнь",
+                                    "Июль", "Авг.", "Сент.", "Окт.", "Нояб.", "Дек."];
+                return monthNames[idx]
+            }
+
+            onSignal4:{
+                listmodel2.clear();
+                monthsProperties.clear()
+
+                var curIndexStart=0
+                var buf=0
+
+                for(var j=0; j<7; j++){
+                   if((j-3)===0){
+                       curIndexStart=buf
+                   }
+
+                   buf=createNewGridMonth(month-3+j,year,j,buf)
+                }
+                console.log("[начало]"+month)
+                positionViewAtIndex(curIndexStart-21,GridView.Beginning)
+                console.log("[конец]"+month)
+            }
+
+            function createNewGridMonth(mon,yr,where,startPos){
+                var curMon=mon
+                var curYr=yr
+
+                if(curMon<0){
+                    curYr-=1
+                    curMon=12+curMon
+                }else if(curMon>11){
+                    curMon-=12
+                    curYr+=1
+                }
+
+                var days=daysInMonth(curMon,curYr)
+                var blanksFront=blankDays(curMon,curYr)
+                var blanksEnd=7-(days+blanksFront)%7
+
+                var sum=blanksFront+days+blanksEnd
+
+                monthsProperties.insert(where,{startIndex:startPos, sumElements: sum, month:curMon, year:curYr })
+
+                var flag=false
+                var flag2=false
+                var flag3=true
+
+                for(var i=0; i<sum;i++){
+                    if(i+1>blanksFront && i+1<=blanksFront+days){
+                        if(flag3){
+                            flag3=false
+                            flag2=true
+                        }
+
+                        flag=true
+                    }
+
+                    listmodel2.insert(i+startPos,{color1:checkBlanksColor(blanksFront,blanksFront+days,i),
+                                          color2:curYr===curYear && curMon===curMonth && (i+1-blanksFront)==curDay ? "red" : checkBlanksColor(blanksFront,blanksFront+days,i),
+                                          number1: flag===true ? (i+1-blanksFront).toString() : "",
+                                          name1: flag2===true && where!==3 ? getShortMonthName(curMon) : ""
                                       })
+
+                    flag=false
+                    flag2=false
+
+                }
+                return startPos+sum
+            }
+
+            function deleteGridMonth(indx){
+                listmodel2.remove(monthsProperties.get(indx).startIndex, monthsProperties.get(indx).sumElements)
+                var value=monthsProperties.get(indx).sumElements
+                monthsProperties.remove(indx)
+
+                return value
+            }
+
+
+            function changeMonthYear(nxt){
+
+                var blanksFront=blankDays(monthsProperties.get(3).month,monthsProperties.get(3).year)
+                var nameMon=getShortMonthName(monthsProperties.get(3).month)
+                listmodel2.get(monthsProperties.get(3).startIndex+blanksFront).name1=nameMon
+
+                blanksFront=blankDays(monthsProperties.get(nxt).month,monthsProperties.get(nxt).year)
+                listmodel2.get(monthsProperties.get(nxt).startIndex+blanksFront).name1=""
+                console.log("here_1")
+                month=monthsProperties.get(nxt).month
+
+                changeYear(monthsProperties.get(3).month,month)
+            }
+
+            function changeYear(cur,nxt){
+                var difMons=cur-nxt
+                if(Math.abs(difMons)!=1){
+                    if(difMons>0){
+                        year+=1
+                        minYear+=1
+                        maxYear+=1
+                    }else if(difMons<0){
+                        year-=1
+                        minYear-=1
+                        maxYear-=1
+                    }
+                }
+            }
+
+            property bool f: true
+            onContentYChanged: {
+                var i=indexAt(contentX,contentY)
+                console.log(i)
+                var buf=0
+
+
+
+                if(i<monthsProperties.get(2).startIndex-14 && f && i!==0){
+
+                    f=false
+
+                    console.log("here_3")
+                    changeMonthYear(2)
+
+                    var mon1=monthsProperties.get(0).month
+                    var yr1=monthsProperties.get(0).year
+
+                    deleteGridMonth(monthsProperties.count-1)
+
+                    buf=createNewGridMonth(mon1-1,yr1,0,0)
+
+                    for(var j=1;j<monthsProperties.count;j++){
+                        monthsProperties.get(j).startIndex+=buf
+
+                    }
+
+                    f=true
+
+                }else if(i>=(monthsProperties.get(4).startIndex-21) && f){
+
+                    f=false
+
+                    console.log("here_4")
+                    changeMonthYear(4)
+
+                    var mon=monthsProperties.get(monthsProperties.count-1).month
+                    var yr=monthsProperties.get(monthsProperties.count-1).year
+                    var st=monthsProperties.get(monthsProperties.count-1).startIndex+monthsProperties.get(monthsProperties.count-1).sumElements
+
+                    createNewGridMonth(mon+1,yr,monthsProperties.count,st)
+                    buf=deleteGridMonth(0)
+
+                    for(j=0;j<monthsProperties.count;j++){
+                        monthsProperties.get(j).startIndex-=buf
+
+                    }
+
+                    f=true
                 }
             }
         }
@@ -340,6 +540,7 @@ Page{
         anchors.right: parent.right
         height: parent.height
         visible: false
+
     }
 
     /*Табличка с днями недели*/
@@ -407,7 +608,6 @@ Page{
             Text{
                 text: year
 
-
                 font.pixelSize: 50
                 font.weight: "Black"
                 color: year==curYear ? "red" : "white"
@@ -423,6 +623,8 @@ Page{
             }
         }
 
+
+
         /*Переключатель между видами календаря*/
         Box{
             id:box
@@ -430,9 +632,9 @@ Page{
             width: parent.width/2
             height: parent.height/2
 
-            onSignal1: {gridBack.visible=false; listView1.visible=true; mthName.visible=false; daypage.visible=false; weeks.visible=false}
-            onSignal2: {grid.signal4();gridBack.visible=true; mthName.visible=true; listView1.visible=false; daypage.visible=false; weeks.visible=true}
-            onSignal3: {gridBack.visible=false; listView1.visible=false; mthName.visible=true; daypage.visible=true; weeks.visible=true}
+            onSignal1: {listView1.signal5(); gridBack.visible=false; listView1.visible=true; mthName.visible=false; daypage.visible=false; weeks.visible=false}
+            onSignal2: {grid.signal4(); gridBack.visible=true; mthName.visible=true; listView1.visible=false; daypage.visible=false; weeks.visible=true}
+            onSignal3: {gridBack.visible=false;console.log(day+" "+month+" "+year); listView1.visible=false; mthName.visible=true; daypage.visible=true; weeks.visible=true}
         }
     }
 }

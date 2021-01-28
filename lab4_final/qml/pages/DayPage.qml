@@ -5,6 +5,10 @@ import QtQuick.Layouts 1.1
 
 Item {
 
+    function check(){
+        console.log("s")
+    }
+
     Rectangle{
         id:firstArea
         anchors.fill:parent
